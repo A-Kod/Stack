@@ -1,4 +1,5 @@
 #include <iostream>
+////
 
 class stack_error: public std::logic_error
 {
