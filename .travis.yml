@@ -1,5 +1,4 @@
 language: generic
-
 matrix:
   include:
     - os: linux
@@ -13,7 +12,6 @@ matrix:
           sources: &sources
             - llvm-toolchain-precise
             - ubuntu-toolchain-r-test
-
     - os: linux
       sudo: required
       env: COMPILER_NAME=gcc CXX=g++-4.9 CC=gcc-4.9
@@ -26,11 +24,7 @@ matrix:
             - llvm-toolchain-precise
             - ubuntu-toolchain-r-test
 
-    - os: osx
-      compiler: clang-3.8
-      env: COMPILER=clang++ -std=c++11
-
 script:
-  - mkdir build && cd build
+  - mkdir build
+  - cd build
   - cmake .. && make
-  - ./tests -s -r compact
