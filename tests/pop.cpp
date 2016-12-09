@@ -3,7 +3,7 @@
 
 SCENARIO("pop one element from stack with one elem")
 {
-    GIVEN("empty stack)
+    GIVEN("stack with one elem")
     {
         Stack<int> st;
         st.push(0);
@@ -13,6 +13,22 @@ SCENARIO("pop one element from stack with one elem")
             THEN("st.count == 0")
             {
                 REQUIRE(st.count() == 0);
+            }
+        }
+    }
+}
+
+
+SCENARIO("pop from empty stack")
+{
+    GIVEN("empty stack")
+    {
+        Ыtack<int> st;
+        WHEN("pop")
+        {
+            THEN("pop must throw exception")
+            {
+                REQUIRE_THROWS_AS(st.pop(), std::logic_error);
             }
         }
     }
