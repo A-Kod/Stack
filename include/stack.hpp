@@ -1,6 +1,7 @@
 #ifndef STACK_1_0_STACK_H
 #define STACK_1_0_STACK_H
 #include <iostream>
+#include <stdexcept>
 
 class stack_error: public std::logic_error
 {
