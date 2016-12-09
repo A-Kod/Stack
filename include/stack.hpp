@@ -85,7 +85,7 @@ void Stack<T>::print ()
 template <typename T>
 bool Stack<T>::empty()
 {
-    return !count_;
+    return count_ > 0 ? false: true;
 }
 
 template <typename T>
