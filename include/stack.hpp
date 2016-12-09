@@ -1,7 +1,8 @@
 #ifndef STACK_1_0_STACK_H
 #define STACK_1_0_STACK_H
 #include <iostream>
-#include <stdexcept> 
+
+#include <iostream>
 
 class stack_error: public std::logic_error
 {
@@ -15,13 +16,15 @@ class Stack
 {
 public:
     Stack();
-    size_t count() const;
-    void push(T const&);
-    auto pop()  throw (std::logic_error) -> T;
-    void print ();
-    bool empty();
+    auto count() const noexcept ->size_t;
+    auto push(T const&) noexcept -> void;
+    auto pop() throw (std::logic_error) -> T;
+    auto top () throw (std::logic_error) ->  void;
+    auto print () noexcept -> void;
+    auto empty() noexcept -> bool;
     ~Stack();
 private:
+    static const size_t default_size = 100;
     T * array_;
     size_t array_size_;
     size_t count_;
@@ -30,19 +33,19 @@ private:
 template <typename T>
 Stack<T>::Stack()
 {
-    array_size_ = 5;
-    array_ = new T[array_size_];
+    array_ = new T[default_size];
+    array_size_ = default_size;
     count_ = 0;
 }
 
 template <typename T>
-size_t Stack<T>::count() const
+auto Stack<T>::count() const noexcept ->size_t
 {
     return count_;
 }
 
 template <typename T>
-void Stack<T>::push(T const& value_)
+auto Stack<T>::push(T const& value_) noexcept -> void
 {
     if (count_ == array_size_)
     {
@@ -58,7 +61,7 @@ void Stack<T>::push(T const& value_)
 }
 
 template <typename T>
-auto Stack<T>::pop() throw (std::logic_error) -> T
+auto Stack<T>::pop()  throw (std::logic_error) -> T
 {
     if (!empty())
     {
@@ -70,28 +73,37 @@ auto Stack<T>::pop() throw (std::logic_error) -> T
 }
 
 template <typename T>
-void Stack<T>::print ()
+auto Stack<T>::top () throw (std::logic_error) -> void
+{
+//    if (!empty())
+//        return array_[0];
+//    else
+//        throw stack_error("Error of top()");
+}
+
+template <typename T>
+auto Stack<T>::print () noexcept -> void
 {
     if (empty())
         std:: cout << "Stack is empty!" << std:: endl;
-    else
+        else
     {
         for (int i = 0; i < count_; i++)
             std::cout << array_[i] << " ";
         std::cout << std::endl;
     }
-}
+        }
+        
+template <typename T>
+auto Stack<T>::empty() noexcept -> bool
+    {
+        return count_ > 0 ? false: true;
+    }
 
 template <typename T>
-bool Stack<T>::empty()
-{
-    return count_ > 0 ? false: true;
-}
-
-template <typename T>
-Stack<T>::~Stack()
-{
-    delete [] array_;
-}
-
+ Stack<T>::~Stack()
+    {
+        delete [] array_;
+    }
+        
 #endif //STACK_1_0_STACK_H
