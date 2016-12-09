@@ -23,7 +23,7 @@ SCENARIO("pop from empty stack")
 {
     GIVEN("empty stack")
     {
-        Ыtack<int> st;
+        Stack<int> st;
         WHEN("pop")
         {
             THEN("pop must throw exception")
