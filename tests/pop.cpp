@@ -18,18 +18,3 @@ SCENARIO("pop one element from stack with one elem")
     }
 }
 
-
-SCENARIO("pop from empty stack")
-{
-    GIVEN("empty stack")
-    {
-        Stack<int> st;
-        WHEN("pop")
-        {
-            THEN("pop must throw exception")
-            {
-                REQUIRE_THROWS_AS(st.pop(), std::logic_error);
-            }
-        }
-    }
-}
