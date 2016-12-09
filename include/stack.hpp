@@ -2,8 +2,6 @@
 #define STACK_1_0_STACK_H
 #include <iostream>
 
-#include <iostream>
-
 class stack_error: public std::logic_error
 {
 public:
