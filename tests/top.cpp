@@ -1,7 +1,6 @@
 #include "stack.hpp"
 #include "catch.hpp"
 
-
 SCENARIO("top one element from stack with one elem")
 {
     GIVEN("stack with one elem")
