@@ -45,30 +45,6 @@ auto Stack<T>::count() const noexcept ->size_t
 template <typename T>
 auto Stack<T>::push(T const& value_) /*strong*/ -> void
 {
- /*   if (count_ == array_size_)
-    {
-        size_t size = 2 * array_size_;
-
-        try
-        {
-            T *a = new T[size];
-            std::copy(array_, array_ + array_size_, a);
-
-            delete[] array_;
-
-            array_ = a;
-            array_size_ = size;
-        }
-
-        catch  (...)
-        {
-            array_size_/=2;
-            delete [] a;
-        }
-    }
-    array_[count_] = value_;
-    ++count_;*/
-
     T* b;
 
     try
@@ -128,7 +104,6 @@ auto Stack<T>::pop()  throw (std::logic_error) /*strong*/ -> void
     if (!empty())
     {
         count_--;
-        // array_[count_] = 0;
     }
     else
         throw stack_error("Error of pop()");
