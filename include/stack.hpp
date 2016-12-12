@@ -15,9 +15,9 @@ class Stack
 public:
     Stack();
     auto count() const noexcept ->size_t;
-    auto push(T const&) noexcept -> void;
-    auto pop() throw (std::logic_error) -> T;
-    auto top () throw (std::logic_error) ->  void;
+    auto push(T const&) /*strong*/ -> void;
+    auto pop() throw (std::logic_error) /*strong*/ -> void;
+    auto top () throw (std::logic_error) /*strong*/ ->  T;
     auto print () noexcept -> void;
     auto empty() noexcept -> bool;
     ~Stack();
@@ -43,40 +43,106 @@ auto Stack<T>::count() const noexcept ->size_t
 }
 
 template <typename T>
-auto Stack<T>::push(T const& value_) noexcept -> void
+auto Stack<T>::push(T const& value_) /*strong*/ -> void
 {
-    if (count_ == array_size_)
+ /*   if (count_ == array_size_)
     {
         size_t size = 2 * array_size_;
-        T *a = new T[size];
-        std::copy(array_, array_ + array_size_, a);
-        delete[] array_;
-        array_ = a;
-        array_size_ = size;
+
+        try
+        {
+            T *a = new T[size];
+            std::copy(array_, array_ + array_size_, a);
+
+            delete[] array_;
+
+            array_ = a;
+            array_size_ = size;
+        }
+
+        catch  (...)
+        {
+            array_size_/=2;
+            delete [] a;
+        }
     }
     array_[count_] = value_;
-    ++count_;
+    ++count_;*/
+
+    T* b;
+
+    try
+    {
+        b = new T[array_size_];
+        std::copy(array_, array_+count_, b);
+    }
+    catch(...)
+    {
+        delete[] b;
+        throw ;
+    }
+
+    if (count_ == array_size_)
+    {
+        array_size_ += array_size_;
+        T* a;
+
+        try
+        {
+            a = new T[array_size_];
+            std::copy(array_, array_+count_, a);
+            delete[] array_;
+            array_ = a;
+        }
+        catch (...)
+        {
+            array_size_ /= 2;
+            delete[] a;
+            delete[] b;
+
+            throw ;
+        }
+
+    }
+
+    try
+    {
+        array_[count_] = value_;
+        ++count_;
+    }
+    catch (...)
+    {
+        delete[] array_;
+        array_ = b;
+        array_size_ /= 2;
+        throw;
+    }
+
+    delete[] b;
 }
 
 template <typename T>
-auto Stack<T>::pop()  throw (std::logic_error) -> T
+auto Stack<T>::pop()  throw (std::logic_error) /*strong*/ -> void
+{
+    //
+    if (!empty())
+    {
+        count_--;
+        // array_[count_] = 0;
+    }
+    else
+        throw stack_error("Error of pop()");
+}
+
+template <typename T>
+auto Stack<T>::top () throw (std::logic_error) /*strong*/ -> T
 {
     if (!empty())
     {
-        --count_;
-        return array_[count_];
+        return array_[count_-1];
     }
     else
-        throw stack_error ("Error of pop()");
-}
-
-template <typename T>
-auto Stack<T>::top () throw (std::logic_error) -> void
-{
-//    if (!empty())
-//        return array_[0];
-//    else
-//        throw stack_error("Error of top()");
+        throw stack_error ("Error of top()");
 }
 
 template <typename T>
