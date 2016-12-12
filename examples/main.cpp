@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "stack.hpp"
 
 using namespace std;
@@ -14,6 +16,8 @@ int main()
     
     std::cout << "Range of stack - " << st.count() << std::endl;
     st.print();
+
+    std:: cout << "Top of stack - " << st.top() << std::endl;
     
     st.pop();
     std::cout << "Stack after pop:" << std::endl;
