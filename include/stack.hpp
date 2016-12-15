@@ -1,6 +1,7 @@
 #ifndef STACK_1_0_STACK_H
 #define STACK_1_0_STACK_H
 #include <iostream>
+#include <allocator.hpp>
 
 class stack_error: public std::logic_error
 {
@@ -10,100 +11,49 @@ public:
 };
 
 template <typename T>
-class Stack
+class Stack: private allocator <T>
 {
 public:
-    Stack();
+    Stack(size_t size = 0);
     auto count() const noexcept ->size_t;
     auto push(T const&) /*strong*/ -> void;
     auto pop() throw (std::logic_error) /*strong*/ -> void;
     auto top () throw (std::logic_error) /*strong*/ ->  T;
     auto print () noexcept -> void;
     auto empty() noexcept -> bool;
-    ~Stack();
-private:
-    static const size_t default_size = 100;
-    T * array_;
-    size_t array_size_;
-    size_t count_;
 };
 
+// наследуем конструктор
 template <typename T>
-Stack<T>::Stack()
-{
-    array_ = new T[default_size];
-    array_size_ = default_size;
-    count_ = 0;
-}
+Stack<T>::Stack(size_t size) : allocator<T>(size) {};
 
+// количество элементов стека
 template <typename T>
 auto Stack<T>::count() const noexcept ->size_t
 {
-    return count_;
+    return allocator <T>::count_;
 }
 
 template <typename T>
 auto Stack<T>::push(T const& value_) /*strong*/ -> void
 {
-    T* b;
-
     try
     {
-        b = new T[array_size_];
-        std::copy(array_, array_+count_, b);
+        allocator<T>:: allocate();
+        allocator<T>::p[allocator<T>::count_] = value_;
+        allocator<T>::count_++;
     }
+
     catch(...)
-    {
-        delete[] b;
-        throw ;
-    }
-
-    if (count_ == array_size_)
-    {
-        array_size_ += array_size_;
-        T* a;
-
-        try
-        {
-            a = new T[array_size_];
-            std::copy(array_, array_+count_, a);
-            delete[] array_;
-            array_ = a;
-        }
-        catch (...)
-        {
-            array_size_ /= 2;
-            delete[] a;
-            delete[] b;
-
-            throw ;
-        }
-
-    }
-
-    try
-    {
-        array_[count_] = value_;
-        ++count_;
-    }
-    catch (...)
-    {
-        delete[] array_;
-        array_ = b;
-        array_size_ /= 2;
-        throw;
-    }
-
-    delete[] b;
+    {}
 }
 
 template <typename T>
 auto Stack<T>::pop()  throw (std::logic_error) /*strong*/ -> void
 {
-    //
     if (!empty())
     {
-        count_--;
+        allocator<T>::count_--;
     }
     else
         throw stack_error("Error of pop()");
@@ -114,7 +64,7 @@ auto Stack<T>::top () throw (std::logic_error) /*strong*/ -> T
 {
     if (!empty())
     {
-        return array_[count_-1];
+        return allocator<T>::p[allocator<T>::count_-1];
     }
     else
         throw stack_error ("Error of top()");
@@ -127,22 +77,16 @@ auto Stack<T>::print () noexcept -> void
         std:: cout << "Stack is empty!" << std:: endl;
         else
     {
-        for (int i = 0; i < count_; i++)
-            std::cout << array_[i] << " ";
+        for (int i = 0; i < allocator<T>::count_; i++)
+            std::cout << allocator<T>::p[i] << " ";
         std::cout << std::endl;
     }
-        }
+}
         
 template <typename T>
 auto Stack<T>::empty() noexcept -> bool
-    {
-        return count_ > 0 ? false: true;
-    }
-
-template <typename T>
- Stack<T>::~Stack()
-    {
-        delete [] array_;
-    }
+{
+    return (!allocator<T>::count_);
+}
         
 #endif //STACK_1_0_STACK_H
