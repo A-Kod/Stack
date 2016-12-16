@@ -25,9 +25,9 @@ allocator<T>::allocator(size_t size)
 {
     // инициализация полей класса
     size_ = size;
-    p = new T[size_];
+   // p = new T[size_];
     // выделение памяти и приведение void*, который возвращает new, к T*
-    // static_cast<T*>(::operator new(size * sizeof(T)));
+    p = static_cast<T*>(::operator new(size * sizeof(T)));
 }
 
 // деструктор
