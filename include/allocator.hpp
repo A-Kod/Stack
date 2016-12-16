@@ -15,16 +15,15 @@ protected:
     auto swap(allocator & other) -> void;
     auto allocate() -> void;
 
-    T * p;
-    size_t size_;
-    size_t count_;
+    T * p = nullptr;
+    size_t size_ = 0;
+    size_t count_ = 0;
 };
 
 template <typename T>
 allocator<T>::allocator(size_t size)
 {
     // инициализация полей класса
-    count_ = 0;
     size_ = size;
     p = new T[size_];
     // выделение памяти и приведение void*, который возвращает new, к T*
@@ -46,17 +45,18 @@ allocator<T>::~allocator()
 template <typename T>
 auto allocator<T>::swap(allocator & other) -> void
 {
-    auto t = p;
-    p = other.p;
-    other.p = t;
+    std::swap(p, other.p);
+    // std::swap(count_, other.count_);
+    std::swap(size_, other.size_);
 }
 
 template <typename T>
 auto allocator<T>::allocate() -> void
 {
     // если выделенная память закончилась
-    if (size_ == count_ )
+    if (size_ == count_)
     {
+        //новый размер стека
         auto s = 1;
 
         // если размер выделенной памяти больше 0
@@ -65,9 +65,16 @@ auto allocator<T>::allocate() -> void
 
         // копируем данные в новую область памяти, меняем размер
         allocator<T> alloc(s);
-        std::copy(p, p + count_, alloc.p);
-        swap(alloc);
-        size_ = s;
+
+        try
+        {
+            std::copy(p, p + count_, alloc.p);
+            swap(alloc);
+        }
+        catch (...)
+        {
+            throw ;
+        }
     }
 }
 
