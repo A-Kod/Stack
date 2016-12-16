@@ -37,15 +37,45 @@ auto Stack<T>::count() const noexcept ->size_t
 template <typename T>
 auto Stack<T>::push(T const& value_) /*strong*/ -> void
 {
+    T* b;
+
+    try
+    {
+        b = new T[allocator <T>::size_];
+        std::copy(allocator<T>::p, allocator<T>::p + allocator<T>::count_, b);
+    }
+
+    catch (...)
+    {
+       delete [] b;
+        throw ;
+    }
+
     try
     {
         allocator<T>:: allocate();
+    }
+
+    catch(...)
+    {
+        delete [] allocator<T>::p;
+        allocator<T>::size_ /=2;
+        std::copy(b, b + allocator <T>::count_, allocator<T>::p);
+        allocator <T>::p = b;
+
+        throw ;
+    }
+
+    try
+    {
         allocator<T>::p[allocator<T>::count_] = value_;
         allocator<T>::count_++;
     }
 
-    catch(...)
-    {}
+    catch (...)
+    {
+        throw ;
+    }
 }
 
 template <typename T>
