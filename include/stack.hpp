@@ -37,28 +37,38 @@ auto Stack<T>::count() const noexcept ->size_t
 template <typename T>
 auto Stack<T>::push(T const& value_) /*strong*/ -> void
 {
-    bool alloc = false;
-    if(allocator<T>::count_ == allocator<T>::size_)
-    {
-        try
-        {
-            allocator<T>::allocate();
-        }
-        catch(...) { throw; }
-        alloc = true;
-    }
-
+    T* b;
     try
     {
-        allocator<T>::p[allocator<T>::count_] = value_;
+        b = new T[allocator <T>::size_];
+        std::copy(allocator<T>::p, allocator<T>::p + allocator<T>::count_, b);
+    }
+    catch (...)
+    {
+        delete [] b;
+        throw ;
+    }
+    try
+    {
+        allocator<T>:: allocate();
     }
     catch(...)
     {
-        if(alloc)
-            allocator<T>::deallocate();
-        throw;
+        delete [] allocator<T>::p;
+        allocator<T>::size_ /=2;
+        std::copy(b, b + allocator <T>::count_, allocator<T>::p);
+        allocator <T>::p = b;
+        throw ;
     }
-    allocator<T>::count_++;
+    try
+    {
+        allocator<T>::p[allocator<T>::count_] = value_;
+        allocator<T>::count_++;
+    }
+    catch (...)
+    {
+        throw ;
+    }
 }
 
 template <typename T>
@@ -88,18 +98,18 @@ auto Stack<T>::print () noexcept -> void
 {
     if (empty())
         std:: cout << "Stack is empty!" << std:: endl;
-        else
+    else
     {
         for (int i = 0; i < allocator<T>::count_; i++)
             std::cout << allocator<T>::p[i] << " ";
         std::cout << std::endl;
     }
 }
-        
+
 template <typename T>
 auto Stack<T>::empty() noexcept -> bool
 {
     return (!allocator<T>::count_);
 }
-        
+
 #endif //STACK_1_0_STACK_H
