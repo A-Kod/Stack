@@ -56,14 +56,16 @@ auto Stack<T>::push(T const& value_) /*strong*/ -> void
     {
         delete [] allocator<T>::p;
         allocator<T>::size_ /=2;
+        p = static_cast<T*>(::operator new(size_ * sizeof(T)));
         std::copy(b, b + allocator <T>::count_, allocator<T>::p);
-        allocator <T>::p = b;
+        delete [] b;
         throw ;
     }
     try
     {
         allocator<T>::p[allocator<T>::count_] = value_;
         allocator<T>::count_++;
+        delete [] b;
     }
     catch (...)
     {
