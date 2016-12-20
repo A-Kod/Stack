@@ -1,81 +1,137 @@
-#ifndef STACK_ALLOCATOR_HPP
-#define STACK_ALLOCATOR_HPP
-
-#include <algorithm>
+#ifndef STACK_Allocator_HPP
+#define STACK_Allocator_HPP
 
 template <typename T>
-class allocator
+class Allocator
 {
-protected:
-    allocator(size_t size = 0);
-    allocator(const allocator &) = delete;
-    ~allocator();
+public:
+    explicit
+    Allocator( std::size_t size = 0);
+    Allocator( Allocator const& other);
+    auto operator =( Allocator const& other ) -> Allocator& = delete;
+    ~Allocator();
+    auto resize() -> void;
+    auto swap(Allocator& other ) -> void;
+    auto construct(T* ptr, T const & value ) -> void;
+    auto destroy(T* ptr ) -> void;
+    auto get() -> T*;
+    auto get() const -> T const*;
+    auto count() const noexcept -> size_t;
+    auto full() const noexcept -> bool;
+    auto empty() const noexcept-> bool;
 
-    auto operator = (const allocator &) -> allocator & = delete;
-    auto swap(allocator & other) -> void;
-    auto allocate() -> void;
-
+private:
     T * p = nullptr;
     size_t size_ = 0;
     size_t count_ = 0;
 };
 
 template <typename T>
-allocator<T>::allocator(size_t size)
+Allocator<T>::Allocator( std::size_t size ) : size_(size), p(static_cast<T*>(::operator new(size * sizeof(T), std::nothrow_t()))), count_(0)
 {
-    // инициализация полей класса
-    size_ = size;
-    // выделение памяти и приведение void*, который возвращает new, к T*
-    p = static_cast<T*>(::operator new(size * sizeof(T)));
+
 }
 
-// деструктор
 template <typename T>
-allocator<T>::~allocator()
+Allocator<T>::Allocator( Allocator const& other )
 {
-    // освобождаем выделенную динамическую память
-    for(int i = 0; i < count_; ++i)
-        p[i].~T();
-    ::operator delete(p);
+    if (count_ > 0)
+    {
+        for (int32_t i = --count_; i >= 0; --i)
+            destroy(p+i);
+    }
+    operator delete(p);
+
+    size_  = other.size_;
+    count_ = other.count_;
+
+    p = static_cast<T *>(::operator new(size_ * sizeof(T), std::nothrow_t()));
+    for (size_t i = 0; i < other.count_; i++)
+            construct(p + i, other.p[i]);
 }
 
-// обмен значениями на уровне указателей - вспомогательный метод для allocate()
 template <typename T>
-auto allocator<T>::swap(allocator & other) -> void
+Allocator<T>::~Allocator()
+{
+    if (count_ > 0)
+    {
+        for (int32_t i = --count_; i >= 0; --i)
+            destroy(p+i);
+
+    }
+    operator delete(p);
+}
+
+template <typename T>
+auto Allocator<T>::resize() -> void
+{
+    Allocator<T> alloc (size_ * 2 + (size_ == 0));
+    for (size_t i = 0; i < size_; ++i)
+        alloc.construct(alloc.get() + i, p[i]);
+    alloc.swap(*this);
+}
+
+template <typename T>
+auto Allocator<T>::swap(Allocator& other ) -> void
 {
     std::swap(p, other.p);
-    std::swap(count_, other.count_);
     std::swap(size_, other.size_);
+    std::swap(count_, other.count_);
 }
 
 template <typename T>
-auto allocator<T>::allocate() -> void
+auto Allocator<T>::construct(T* ptr, T const & value ) -> void
 {
-    // если выделенная память закончилась
-    if (size_ == count_)
+    if ((ptr >= p) && (ptr < p + size_))
     {
-        //новый размер стека
-        auto s = 1;
-
-        // если размер выделенной памяти больше 0
-        if (size_)
-            s = size_*2;
-
-        // копируем данные в новую область памяти, меняем размер
-        allocator<T> alloc(s);
-
-        try
+        //По адресу ptr присваиваем значение value
+            //placement new
+        new(ptr)T(value);
+        ++count_;
+    }
+    else
         {
-            std::copy(p, p + count_, alloc.p);
-            alloc.count_ = count_;
-            swap(alloc);
+            throw("error");
         }
-        catch (...)
-        {
-            throw ;
-        }
+}
+
+template <typename T>
+auto Allocator<T>::destroy(T* ptr ) -> void
+{
+    if ((ptr >= p) && (ptr <= p + count_))
+    {
+        ptr->~T();
+        --count_;
     }
 }
 
+template <typename T>
+auto Allocator<T>::get() -> T*
+{
+    return p;
+}
 
+template <typename T>
+auto Allocator<T>::get() const -> T const*
+{
+    return p;
+}
+
+template <typename T>
+auto Allocator<T>::count() const noexcept -> size_t
+{
+    return count_;
+}
+
+template <typename T>
+auto Allocator<T>::full() const noexcept -> bool
+{
+    return count_ == size_ ? true: false;
+}
+
+template <typename T>
+auto Allocator<T>::empty() const noexcept -> bool
+{
+    return count_ > 0 ? false: true;
+}
 #endif
