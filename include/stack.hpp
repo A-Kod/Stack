@@ -1,118 +1,100 @@
-#ifndef STACK_1_0_STACK_H
-#define STACK_1_0_STACK_H
+#ifndef Stack_1_0_Stack_H
+#define Stack_1_0_Stack_H
 #include <iostream>
-#include <allocator.hpp>
+#include "allocator.hpp"
 
-class stack_error: public std::logic_error
+class Stack_error: public std::logic_error
 {
 public:
-    explicit stack_error (const std::string& arg): std::logic_error (arg) {};
-    explicit stack_error (const char* arg): std::logic_error (arg) {};
+    explicit Stack_error (const std::string& arg): std::logic_error (arg) {};
+    explicit Stack_error (const char* arg): std::logic_error (arg) {};
 };
 
 template <typename T>
-class Stack: private allocator <T>
+class Stack
 {
 public:
+
+    explicit
     Stack(size_t size = 0);
-    auto count() const noexcept ->size_t;
-    auto push(T const&) /*strong*/ -> void;
-    auto pop() throw (std::logic_error) /*strong*/ -> void;
-    auto top () throw (std::logic_error) /*strong*/ ->  T;
-    auto print () noexcept -> void;
-    auto empty() noexcept -> bool;
+
+    auto count() const noexcept -> size_t ;
+    auto push(T const& value) -> void;
+    auto top() const throw (std::logic_error) -> T;
+    auto pop() throw (std::logic_error) -> void;
+    auto empty() const noexcept -> bool;
+
+private:
+    Allocator<T> alloc;
 };
 
-// наследуем конструктор
 template <typename T>
-Stack<T>::Stack(size_t size) : allocator<T>(size) {};
-
-// количество элементов стека
-template <typename T>
-auto Stack<T>::count() const noexcept ->size_t
+Stack<T>::Stack(size_t size): alloc(size)
 {
-    return allocator <T>::count_;
+}
+
+
+template <typename T>
+auto Stack<T>::count() const noexcept -> size_t
+{
+    return alloc.count();
+}
+
+
+template <typename T>
+auto Stack<T>::empty() const noexcept -> bool
+{
+    return (alloc.empty());
 }
 
 template <typename T>
-auto Stack<T>::push(T const& value_) /*strong*/ -> void
+auto Stack<T>::push(T const& value) -> void
 {
-    T* b;
+
+    if ((alloc.empty()) || (alloc.full()))
+    {
+        try
+        {
+            alloc.resize();
+        }
+        catch (...)
+        {
+            throw;
+        }
+    }
+
     try
     {
-        b = new T[allocator <T>::size_];
-        std::copy(allocator<T>::p, allocator<T>::p + allocator<T>::count_, b);
-    }
-    catch (...)
-    {
-        delete [] b;
-        throw ;
-    }
-    try
-    {
-        allocator<T>:: allocate();
+        alloc.construct(alloc.get() + alloc.count(), value);
     }
     catch(...)
     {
-        delete [] allocator<T>::p;
-        allocator<T>::size_ /=2;
-        allocator<T>::p = static_cast<T*>(::operator new(allocator<T>::size_ * sizeof(T)));
-        std::copy(b, b + allocator <T>::count_, allocator<T>::p);
-        //allocator <T>::p = b;
-        delete [] b;
-        throw ;
-    }
-    try
-    {
-        allocator<T>::p[allocator<T>::count_] = value_;
-        allocator<T>::count_++;
-        delete [] b;
-    }
-    catch (...)
-    {
-        throw ;
+        throw;
     }
 }
 
+
 template <typename T>
-auto Stack<T>::pop()  throw (std::logic_error) /*strong*/ -> void
+auto Stack<T>::pop()  throw (std::logic_error) -> void
+{
+
+    if (!empty())
+    {
+        alloc.destroy(alloc.get() + alloc.count() - 1);
+    }
+    else
+        throw Stack_error("Error of pop()");
+}
+
+template <typename T>
+auto Stack<T>::top () const throw (std::logic_error) -> T
 {
     if (!empty())
     {
-        allocator<T>::count_--;
+        return alloc.get()[alloc.count()-1];
     }
     else
-        throw stack_error("Error of pop()");
+        throw Stack_error ("Error of top()");
 }
 
-template <typename T>
-auto Stack<T>::top () throw (std::logic_error) /*strong*/ -> T
-{
-    if (!empty())
-    {
-        return allocator<T>::p[allocator<T>::count_-1];
-    }
-    else
-        throw stack_error ("Error of top()");
-}
-
-template <typename T>
-auto Stack<T>::print () noexcept -> void
-{
-    if (empty())
-        std:: cout << "Stack is empty!" << std:: endl;
-    else
-    {
-        for (int i = 0; i < allocator<T>::count_; i++)
-            std::cout << allocator<T>::p[i] << " ";
-        std::cout << std::endl;
-    }
-}
-
-template <typename T>
-auto Stack<T>::empty() noexcept -> bool
-{
-    return (!allocator<T>::count_);
-}
-
-#endif //STACK_1_0_STACK_H
+#endif //Stack_1_0_Stack_H
