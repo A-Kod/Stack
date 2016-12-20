@@ -1,6 +1,8 @@
 #ifndef Stack_1_0_Stack_H
 #define Stack_1_0_Stack_H
 #include <iostream>
+#include <stdexcept>
+
 #include "allocator.hpp"
 
 class Stack_error: public std::logic_error
